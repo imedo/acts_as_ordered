@@ -1,12 +1,38 @@
 # ActsAsOrdered
-module Thc2
+module Thc2 #:nodoc:
   module Acts #:nodoc:
     module Ordered #:nodoc:
-      def self.included(base)
+      def self.included(base) #:nodoc:
         base.extend ClassMethods  
       end
       
+      # This module contains acts methods
       module ClassMethods
+        # This acts allows you to access the logical next and previous element in a database result set that is
+        # specified by the :conditions and :order parameters.
+        #
+        # For example, if Picture p belongs to User u, you can get the next picture belonging to u by calling
+        #
+        #    p.find_next(:conditions => ['user_id = ?', u.id])
+        #
+        # Alternatively, you can use the :source parameter:
+        #
+        #    Picture.find(:next, :source => p, :conditions => ['user_id = ?', u.id])
+        #
+        # Note that you need to give the user id explicitly; the p variable does not store the context of the
+        # result set in which you want to find the logical next and previous items.
+        #
+        # ActiveRecord's :order parameter is of course taken into account:
+        #
+        #    p.find_next(:conditions => ['user_id = ?', u.id], :order => 'created_at ASC')
+        #    # equals
+        #    p.find_prev(:conditions => ['user_id = ?', u.id], :order => 'created_at DESC')
+        #
+        # You can even use multiple order columns, with different sort directions. If you don't specify any
+        # order, a default of 'id ASC' is assumed.
+        #
+        # The next or previous item is found efficiently: The generated SQL ensures that only one item gets
+        # returned from the database.
         def acts_as_ordered(options = {})
           return if self.included_modules.include?(Thc2::Acts::Ordered::InstanceMethods)
           
@@ -22,6 +48,8 @@ module Thc2
       
       # This module contains instance methods
       module InstanceMethods
+        # Finds the logical next or previous element in a database result set, relative to self. To find the
+        # next element, use :next as the first parameter. To find the previous, use :prev.
         def find(*args)
           options = args.extract_options!
           options[:source] = self
@@ -29,10 +57,12 @@ module Thc2
           self.class.find(*args)
         end
         
+        # Finds the logical next element in a database result set, relative to self.
         def find_next(*args)
           find(:next, *args)
         end
         
+        # Finds the logical previous element in a database result set, relative to self.
         def find_prev(*args)
           find(:prev, *args)
         end
@@ -40,7 +70,7 @@ module Thc2
       
       # This module contains class methods
       module SingletonMethods
-        def find_with_ordered(*args)
+        def find_with_ordered(*args) #:nodoc:
           args = args.rdup
           options = prepare_options_for_ordered(args)
           case args.first
@@ -50,31 +80,37 @@ module Thc2
           end
         end
         
-        def find_every_with_ordered(*args)
+        def find_every_with_ordered(*args) #:nodoc:
           args = args.rdup
           prepare_options_for_ordered(args)
           find_every_without_ordered(*args)
         end
         
-        def find_initial_with_ordered(*args)
+        def find_initial_with_ordered(*args) #:nodoc:
           args = args.rdup
           prepare_options_for_ordered(args)
           find_initial_without_ordered(*args)
         end
-
+        
+        # Finds the logical next item, relative to the object given by the required
+        # :source parameter.
         def find_next(*args)
           find(:next, *args)
         end
         
+        # Finds the logical previous item, relative to the object given by the required
+        # :source parameter.
         def find_prev(*args)
           find(:prev, *args)
         end
-
+        
+        # Returns an array containing the logical next and previous items, relative to
+        # the object given by the required :source parameter.
         def find_next_and_prev(*args)
           return find(:next, *args), find(:prev, *args)
         end
         
-      protected
+      private
         def prepare_options_for_ordered(args)
           direction = extract_direction_from_args!(args)
           options = args.extract_options!
