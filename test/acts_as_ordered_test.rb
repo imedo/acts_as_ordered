@@ -103,6 +103,22 @@ class ActsAsOrderedTest < Test::Unit::TestCase
     assert_equal articles[2].id, mid.find_next(:conditions => { :author_id => 1 }, :order => 'id DESC').id
   end
   
+  def test_should_return_nil_if_there_is_no_previous_element
+    create_articles(9)
+    articles = Article.find(:all, :conditions => { :author_id => 1 }, :order => 'id DESC')
+    mid = articles[0]
+    
+    assert_nil mid.find_prev(:conditions => { :author_id => 1 }, :order => 'id DESC')
+  end
+  
+  def test_should_return_nil_if_there_is_no_next_element
+    create_articles(9)
+    articles = Article.find(:all, :conditions => { :author_id => 1 }, :order => 'id DESC')
+    mid = articles[2]
+    
+    assert_nil mid.find_next(:conditions => { :author_id => 1 }, :order => 'id DESC')
+  end
+  
 protected
   def create_articles(num = 9)
     num.times do |i|
