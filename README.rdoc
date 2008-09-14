@@ -1,0 +1,59 @@
+= acts_as_ordered
+
+Author::    Thomas Kadauke  - tkadauke (at) imedo.de
+Copyright:: Copyright (c) 2008 imedo GmbH
+Licence::   MIT
+Git::       http://github.com/imedo/acts_as_ordered
+Bugs::      No dedicated bug tracker yet - Email us or just send pull requests 
+
+Find the logical next or previous item of a result set with a simple query.
+
+== Dependencies
+
+* Rails 2.0.2 (might also work with 2.1)
+
+Additionaly for testing:
+
+* dry_plugin_test_helper - http://github.com/imedo/dry_plugin_test_helper
+* sqlite3 - http://www.sqlite.org/
+
+== Installation
+
+The easiest way to install this plugin is directly from github:
+
+ $ cd vendor/plugins
+ $ git clone git://github.com/imedo/acts_as_ordered.git
+
+== Usage
+
+In your model, simply call acts_as_ordered without any parameters:
+
+   class Picture < ActiveRecord::Base
+     acts_as_ordered
+   end
+
+After that, you can access the logical next and previous element in a database result set that is
+specified by the :conditions and :order parameters.
+
+For example, if Picture p belongs to User u, you can get the next picture belonging to u by calling
+
+   p.find_next(:conditions => ['user_id = ?', u.id])
+
+Alternatively, you can use the :source parameter:
+
+   Picture.find(:next, :source => p, :conditions => ['user_id = ?', u.id])
+
+Note that you need to give the user id explicitly; the p variable does not store the context of the
+result set in which you want to find the logical next and previous items.
+
+ActiveRecord's :order parameter is of course taken into account:
+
+   p.find_next(:conditions => ['user_id = ?', u.id], :order => 'created_at ASC')
+   # equals
+   p.find_prev(:conditions => ['user_id = ?', u.id], :order => 'created_at DESC')
+
+You can even use multiple order columns, with different sort directions. If you don't specify any
+order, a default of 'id ASC' is assumed.
+
+The next or previous item is found efficiently: The generated SQL ensures that only one item gets
+returned from the database.
