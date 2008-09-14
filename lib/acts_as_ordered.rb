@@ -66,6 +66,13 @@ module Thc2 #:nodoc:
         def find_prev(*args)
           find(:prev, *args)
         end
+        
+        def find_next_and_prev(*args)
+          options = args.extract_options!
+          options[:source] = self
+          args.push(options)
+          self.class.find_next_and_prev(*args)
+        end
       end
       
       # This module contains class methods
@@ -121,7 +128,6 @@ module Thc2 #:nodoc:
             add_direction_to_conditions(options, source, columns, methods, direction)
           end
           args.push(options)
-          #puts options.inspect
           options
         end
         
@@ -150,6 +156,7 @@ module Thc2 #:nodoc:
           columns = (options.delete(:order) || 'id').split(',').collect { |col| col.strip }
 
           add_id_to_columns!(direction, columns) unless columns_contain_id?(columns)
+
           if direction == :prev
             options[:order] = columns.collect { |col| reverse_order(col) }.join(", ")
           else
@@ -159,11 +166,7 @@ module Thc2 #:nodoc:
         end
         
         def add_id_to_columns!(direction, columns)
-          if columns.first =~ /DESC$/i
-            columns << 'id DESC'
-          else
-            columns << 'id ASC'
-          end
+          columns << 'id ASC'
         end
         
         def columns_contain_id?(columns)
@@ -210,7 +213,6 @@ module Thc2 #:nodoc:
             merged_conditions << restrictions[0]
           end
           
-          # FUCKO:
           conditions.each_with_index do |c, i|
             merged_conditions << c unless i == 0
           end
@@ -218,11 +220,6 @@ module Thc2 #:nodoc:
             merged_conditions << r unless i == 0
           end
 
-          # conditions.shift
-          # merged_conditions += conditions
-          # restrictions.shift
-          # merged_conditions += conditions
-          
           options[:conditions] = merged_conditions
         end
         
