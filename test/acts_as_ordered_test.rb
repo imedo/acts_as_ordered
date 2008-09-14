@@ -1,12 +1,15 @@
 require File.dirname(__FILE__) + '/abstract_unit'
 
 class ActsAsOrderedTest < Test::Unit::TestCase
+  def setup
+    create_articles(9)
+  end
+  
   def teardown
     Article.delete_all
   end
   
   def test_should_find_next_or_previous
-    create_articles(9)
     articles = Article.find(:all)
     mid = articles[5]
     assert_equal articles[4].id, Article.find(:previous, :source => mid).id
@@ -14,7 +17,6 @@ class ActsAsOrderedTest < Test::Unit::TestCase
   end
   
   def test_should_find_next_or_previous_from_instance
-    create_articles(9)
     articles = Article.find(:all)
     mid = articles[5]
     assert_equal articles[4].id, mid.find_prev.id
@@ -22,14 +24,12 @@ class ActsAsOrderedTest < Test::Unit::TestCase
   end
   
   def test_should_find_both
-    create_articles(9)
     articles = Article.find(:all)
     mid = articles[5]
     assert_equal [articles[6].id, articles[4].id], mid.find_next_and_prev.collect(&:id)
   end
   
   def test_should_find_next_or_previous_with_order_directive
-    create_articles(9)
     articles = Article.find(:all, :order => 'author_id')
     mid = articles[1]
     
@@ -44,7 +44,6 @@ class ActsAsOrderedTest < Test::Unit::TestCase
   end
   
   def test_should_work_correctly_with_reverse_order_directive
-    create_articles(9)
     articles = Article.find(:all, :order => 'author_id DESC')
     mid = articles[1]
     
@@ -59,7 +58,6 @@ class ActsAsOrderedTest < Test::Unit::TestCase
   end
   
   def test_should_find_next_or_previous_with_multiple_order_directives
-    create_articles(9)
     articles = Article.find(:all, :order => 'author_id DESC, id DESC')
     mid = articles[1]
     
@@ -74,7 +72,6 @@ class ActsAsOrderedTest < Test::Unit::TestCase
   end
   
   def test_should_find_next_or_previous_with_conditions
-    create_articles(9)
     articles = Article.find(:all, :conditions => { :author_id => 1 })
     mid = articles[1]
     
@@ -89,7 +86,6 @@ class ActsAsOrderedTest < Test::Unit::TestCase
   end
   
   def test_should_find_next_or_previous_with_order_and_conditions
-    create_articles(9)
     articles = Article.find(:all, :conditions => { :author_id => 1 }, :order => 'id DESC')
     mid = articles[1]
     
@@ -104,7 +100,6 @@ class ActsAsOrderedTest < Test::Unit::TestCase
   end
   
   def test_should_return_nil_if_there_is_no_previous_element
-    create_articles(9)
     articles = Article.find(:all, :conditions => { :author_id => 1 }, :order => 'id DESC')
     mid = articles[0]
     
@@ -112,7 +107,6 @@ class ActsAsOrderedTest < Test::Unit::TestCase
   end
   
   def test_should_return_nil_if_there_is_no_next_element
-    create_articles(9)
     articles = Article.find(:all, :conditions => { :author_id => 1 }, :order => 'id DESC')
     mid = articles[2]
     
