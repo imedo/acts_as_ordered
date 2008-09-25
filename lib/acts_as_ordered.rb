@@ -81,8 +81,8 @@ module Thc2 #:nodoc:
           args = args.rdup
           options = prepare_options_for_ordered(args)
           case args.first
-            when :first then find_initial_without_ordered(options)
-            when :all   then find_every_without_ordered(options)
+            when :first then find_initial(options)
+            when :all   then find_every(options)
             else             find_without_ordered(*args)
           end
         end
